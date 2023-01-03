@@ -335,47 +335,48 @@ Depending one the total size of your data, it may be a good idea to store Passim
 This command (or, better, chain of commands) will output the first document in a bzip2-compressed JSON lines file (some fields have been truncated for the sake of readability):
 
 ```bash
->>> bzcat impresso/GDL-1900.jsonl.bz2 | head -1 | jq '.'
+$ bzcat impresso/data/GDL-1900.jsonl.bz2 | head -1 | jq '.'
 ```
 
 And will output the following:
 ```json
 {
   "series": "GDL",
-  "date": "1900-12-12",
-  "id": "GDL-1900-12-12-a-i0001",
+  "date": "1900-07-07",
+  "id": "GDL-1900-07-07-a-i0001",
   "cc": true,
-  "pages": [
+  "lg": "fr",
+    "pages": [
     {
-      "id": "GDL-1900-12-12-a-p0001",
+      "id": "GDL-1900-07-07-a-p0001",
       "seq": 1,
       "regions": [
         {
           "start": 0,
-          "length": 13,
+          "length": 8,
           "coords": {
-            "x": 471,
-            "y": 1240,
-            "w": 406,
-            "h": 113
-          }
-        },
-        {
-          "start": 13,
-          "length": 2,
-          "coords": {
-            "x": 113,
-            "y": 1233,
-            "w": 15,
+            "x": 206,
+            "y": 1933,
+            "w": 185,
             "h": 54
           }
         },
-        ...
-      ]
-    }
+	{
+          "start": 8,
+          "length": 2,
+          "coords": {
+            "x": 388,
+            "y": 1933,
+            "w": 12,
+            "h": 54
+          }
+        },
+	...
+       ]
+     }
   ],
-  "title": "gratuitement ,la §azette seia envoyée",
-  "text": "gratuitement\n, la § azette\nseia envoyée\ndès ce jour au 31 décembre, aux personnes\nqui s'abonneront pour l'année 1901.\nLes abonnements sont reçus par l'admi-\nnistration de la Gazette de Lausanne et dans\ntous les bureaux de poste.\n"
+  "title": "Lausanne. 7. juillet 1900. BULLtTliMPÔLITIQUE",
+  "text": "Lausanne. 7. juillet 1900.\nBULLtTliMPÔLITIQUE\nïiC rôle de l'Allemagne.\nDes deux discours de l'empereur ..."
 }
 
 ```
