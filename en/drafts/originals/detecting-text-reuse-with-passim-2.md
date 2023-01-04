@@ -389,25 +389,19 @@ In the following table, we build on the original Passim documentation and explai
 
 Parameter | Default value | Description | Explanation
 --------- | ------------- | ----------- | -----------
-`--n` | 5 | N-gram order for text-reuse detection | N-grams are chains of words of length N. This setting allows you to decide what type of n-gram (unigram, bigram, trigram...) Passim should use when creating a list of possible text reuse candidates.<br /><br />Setting this parameter to a lower value can help in the case of very noisy texts (i.e. when many words in a text are affected by one or more OCR errors). In fact, the longer the n-gram, the more likely it is to contain OCR mistakes.
+`--n` | 25 | N-gram order for text-reuse detection | N-grams are chains of characters of length N. This setting allows you to decide what type of n-gram (unigram, bigram, trigram...) Passim should use when creating a list of possible text reuse candidates.<br /><br />Setting this parameter to a lower value can help in the case of very noisy texts (i.e. when many words in a text are affected by one or more OCR errors). In fact, the longer the n-gram, the more likely it is to contain OCR mistakes.
 `--minDF` (`-l`) | 2 | Lower limit on document frequency of n-grams used | Since n-grams are used in Passim to retrieve document candidate pairs, an n-gram occurring only once is not useful as it will retrieve only one document (and not a pair). For this reason `--minDF` defaults to `2`.
 `--maxDF` (`-u`)| 100 | Upper limit on document frequency of n-grams used. | This parameter will filter out n-grams that are too common, thus occurring many times in a given document. <br /><br />This value has an impact on the performances as it will reduce the number of document pairs retrieved by Passim that will need to be compared.
 `--min-match` (`-m`)| 5 | Minimum number of matching n-grams between two documents | This parameter allows you to decide how many n-grams must be found between two documents.
-`--relative-overlap` (`-o`)| 0.8 | Proportion that two different aligned passages from the same document must overlap to be clustered together, as measured on the longer passage <!-- TODO SH: Current mismatch between official doc and code, see what is going to be changed after David answers to this issue https://github.com/dasmiq/Passim/issues/10 --> | This parameter determines the degree of string similarity two passages need to have in order to be clustered together.<br /><br />In the case of very noisy texts, it may be desirable to set this parameter to a  smaller value.
-`--max-repeat` (`-r`)| 10 | Maximum repeat of one series in a cluster | This paramter allows you to specify how much a given series can be present in a cluster.
 
 
 ## Downloading the data
 
-Sample data needed to run the command examples in the two case studies can be downloaded from the [dedicated GitHub repository](https://github.com/impresso/PH-Passim-tutorial). Before continuing with the case studies, download a local copy of the data by cloning the repository.
+Sample data needed to run the command examples in the two case studies can be downloaded from the [dedicated GitHub repository](https://github.com/dasmiq/PH-passim-tutorial). Before continuing with the case studies, download a local copy of the data by cloning the repository.
 
 ```bash
->>> git clone https://github.com/impresso/PH-Passim-tutorial.git
+$ git clone https://github.com/dasmiq/PH-passim-tutorial.git
 ```
-
-Alternatively, it is possible to download the data for this lesson from Zenodo at the address <https://zenodo.org/badge/latestdoi/250229057>.
-
-
 
 ## Case study 1: Bible Quotes in Seventeenth Century Texts
 
@@ -419,26 +413,27 @@ As this is a small-scale example of what an actual research question making use 
 
 At the root of the newly-created directory is a JSON file: `passim_in.json`. This file contains all our data, in the format described above: one document per line (`text`), structured with the bare minimum of required metadata (`id`, `series`). As this is a small file, we encourage you to open the file using a text editor such as Notepad++ on Windows or Sublime on Linux/macOS to familiarise yourself with how the data is formatted. Because our case study focuses on the detection of Bible passages in several documents and not on text reuse within all documents, we have formatted the data so that the `series` field contains `bible` for the Bible (last line of our JSON file), and `not_bible` for all other documents. Passim does not analyse documents that belong to the same series, so this effectively tells the software to only compare all documents with the Bible — not with each other.
 
-The [accompanying Github repository](https://github.com/impresso/PH-Passim-tutorial/) contains a [Python script](https://github.com/impresso/PH-Passim-tutorial/blob/master/eebo/code/main.py) to transform EEBO-TCP into the JSON format required by Passim and used in this lesson. We encourage the readers to reuse it and adapt it to their needs.
+The [accompanying Github repository](https://github.com/dasmiq/PH-passim-tutorial/) contains a [Python script](https://github.com/dasmiq/PH-passim-tutorial/blob/master/eebo/code/main.py) to transform EEBO-TCP into the JSON format required by Passim and used in this lesson. We encourage the readers to reuse it and adapt it to their needs.
 
 ### Running Passim
 
-Create a directory where you want to store the output of Passim (we use `Passim_output_bible` but any name will work). If you decide to use the default `Passim_output_bible` directory, ensure you remove all of its content (i.e. pre-computed Passim output) either manually or by running `rm -r ./eebo/Passim_output_bible/*`.
-
-As we will see in more detail in the second use case, Passim, through Spark, allows for many options. By default Java does not allocate much memory to its processes, and running Passim even on very little datasets will cause Passim to crash because of an `OutOfMemory` error — even if you have a machine with a lot of RAM. To avoid this,  when calling Passim we add some additional parameters that will tell Spark to use more RAM for its processes.
+Create a directory where you want to store the output of Passim (we use `passim_output_bible` but any name will work). If you decide to use the default `passim_output_bible` directory, ensure you remove all of its content (i.e. pre-computed Passim output) either manually or by running `rm -r ./eebo/passim_output_bible/*`.
 
 You are now ready to go forward with your first text reuse project. 
 
-1. Move to the sub-directory `eebo` by executing the command `cd eebo/`, starting from the directory where, earlier on, you cloned the repository [`PH-Passim-tutorial`](https://github.com/impresso/PH-Passim-tutorial/).
+1. Move to the sub-directory `eebo` by executing the command `cd eebo/`, starting from the directory where, earlier on, you cloned the repository [`PH-Passim-tutorial`](https://github.com/dasmiq/PH-passim-tutorial/).
 
 2. Run the following command and go have a cup of your favorite hot beverage:
 ```bash
->>> SPARK_SUBMIT_ARGS='--master local[12] --driver-memory 8G --executor-memory 4G' passim passim_in.json passim_output_bible/
+$ passim passim_in.json passim_output_bible/
 ```
-
-For now, do not worry about the additional arguments `SPARK_SUBMIT_ARGS='--master local[12] --driver-memory 8G --executor-memory 4G'`; in the section ["Case Study 2"](#case-study-2:-text-reuse-in-a-large-corpus-of-historical-newspapers) we will explain them in detail.
-
 This test case takes approximatively eight minutes on a recent laptop with eight threads. You can also follow the progress of the detection at http://localhost:4040 — an interactive dashboard created by Spark (Note: the dashboard will shut down as soon as Passim has finished running).
+
+As we will see in more detail in the [second use case](#case-study-2:-text-reuse-in-a-large-corpus-of-historical-newspapers), Passim, through Spark, allows for many options. By default Java might not allocate much memory to its processes, and running Passim even on very little datasets can cause Passim to crash because of an `OutOfMemory` error — even if you have a machine with a lot of RAM. If you see errors like this, you can call Passim with some additional parameters that will tell Spark to use more RAM for its processes.
+
+```bash
+$ SPARK_SUBMIT_ARGS='--master local[12] --driver-memory 8G --executor-memory 4G' passim passim_in.json passim_output_bible/
+```
 
 ## Case study 2: Text Reuse in a large corpus of historical newspapers
 
@@ -452,14 +447,14 @@ More generally, detecting text reuse in a large-scale newspaper corpus can be us
 * Study information flows, both within and across national borders
 * to allow users discover which contents, within in their own collections, generated text reuse (e.g. famous political speeches, portions of national constitutions, etc.)
 
-For this case study we consider a tiny fraction of the *impresso* corpus, consisting of one year's worth of newspaper data (i.e. 1900) for a sample of four newspapers. The corpus contains 76 newspapers from Switzerland and Luxembourg, covering a time span of 200 years. The sample data necessary to run step by step this case study are contained in the folder [`impresso/`](https://github.com/impresso/PH-Passim-tutorial/tree/master/impresso).
+For this case study we consider a tiny fraction of the *impresso* corpus, consisting of one year's worth of newspaper data (i.e. 1900) for a sample of four newspapers. The corpus contains 76 newspapers from Switzerland and Luxembourg, covering a time span of 200 years. The sample data necessary to run step by step this case study are contained in the folder [`impresso/`](https://github.com/dasmiq/PH-passim-tutorial/tree/master/impresso).
 
 ### Data preparation
 
 The format used in impresso to store newspapers data is slightly different from Passim's input format so we need a script to take care of transforming the former into the latter. While discussing how this script works goes well beyond the scope of this lesson, you can find the conversion script on the [impresso GitHub repository](https://github.com/impresso/impresso-pycommons/blob/master/impresso_commons/text/rebuilder.py) should you be interested. The output of this script is one JSON line file per newspaper per year, compressed into a `.bz2` archive for the sake of efficient storage. Examples of this format can be found in the directory `impresso/data` and shown in the following example:
 
-```
->>> ls -la impresso/data/
+```bash
+$ ls -la impresso/data/
 EXP-1900.jsonl.bz2
 GDL-1900.jsonl.bz2
 IMP-1900.jsonl.bz2
@@ -470,14 +465,15 @@ Each newspaper archive is named after the newspaper identifier: for example, `GD
 
 Sometimes it's not easy to inspect data packaged in this way. But some Bash commands like `bzcat` and `jq` can help us. For example, with the following chain of commands we can find out how many documents (newspaper articles) are contained in each of the input files by counting their IDs:
 
-```
->>> bzcat impresso/data/GDL-1900.jsonl.bz2 | jq --slurp '[.[] |del(.pages)| .id]|length'
+```bash
+$ bzcat impresso/data/GDL-1900.jsonl.bz2 | jq --slurp '[.[] |del(.pages)| .id]|length'
 28380
 ```
 
 And similarly, in all input files:
-```
->>> bzcat impresso/data/*-1900.jsonl.bz2 | jq --slurp '[.[] |del(.pages)| .id]|length'
+
+```bash
+$ bzcat impresso/data/*-1900.jsonl.bz2 | jq --slurp '[.[] |del(.pages)| .id]|length'
 92514
 ```
 
@@ -490,24 +486,29 @@ What these commands do is to read the content of the `.bz2` file by means of `bz
 
 To run the impresso data through Passim, execute the following command in a `Terminal` window:
 
+```bash
+$ passim impresso/data impresso/passim-output/
 ```
-SPARK_SUBMIT_ARGS='--master local[12] --driver-memory 10G --executor-memory 10G --conf spark.local.dir=/scratch/matteo/spark-tmp/' Passim --schema-path="impresso/schema/Passim.schema" "impresso/data/*.jsonl.bz2" "impresso/Passim-output/"
+
+On our machine, Java only allocates 1GB of memory by default, and this takes 25 minutes.  As you work with more data, you might want to take advantage of more processor cores and more memory.  You can pass this informaiton to the Spark runtime using an environment variable like so:
+
+```bash
+$ SPARK_SUBMIT_ARGS='--master local[12] --driver-memory 10G --executor-memory 10G --conf spark.local.dir=/scratch/matteo/spark-tmp/' passim impresso/data" "impresso/passim-output/"
 ```
 
 This command is made up of the following parameters:
 - **`SPARK_SUBMIT_ARGS`** passes some configuration parameters to Spark, the library that takes care of parallel execution of processes.
-    - `--master local[10]`: `local` means we are running Spark in single machine-mode; `[10]` specifies the number of workers (or threads, in this specific case) over which processes should be distributed (`local [*]` will make use of the maximum number of threads);  
-    - `--executor-memory 4G`: The equivalent of the maximum heap size when running a regular JAVA application. It's the amount of memory that Spark allocates to each executor.
+    - `--master local[12]`: `local` means we are running Spark in single machine-mode; `[12]` specifies the number of workers (or threads, in this specific case) over which processes should be distributed (`local [*]` will make use of the maximum number of threads);  
+    - `--executor-memory 10G`: The equivalent of the maximum heap size when running a regular JAVA application. It's the amount of memory that Spark allocates to each executor.
     - `--conf spark.local.dir=/scratch/matteo/spark-tmp/`: A directory where Spark stores temporary data. When working with large datasets, it is important to specify a location with sufficient free disk space.
-- **`--schema-path`**: Specifies the path to the JSON schema describing the input data to be ran through Passim (see section ["Custom JSON format"](#custom-json-format) for more information about how to generate such schema).
-- **`impresso/data/*.jsonl.bz2`**: Specifies the input files (i.e. all files contained in `impresso/data/` with `.jsonl.bz2` in the file name);
-- **`impresso/Passim-output/`**: Specifies where Passim should write its output
 
 If you want to limit the processing to a couple of input files — for example to limit memory usage — you can specify the input using the following command:
 
 ```
-impresso/data/{EXP-1900.jsonl.bz2,GDL-1900.jsonl.bz2}.jsonl.bz2
+$ passim "impresso/data/{EXP,GDL}-1900.jsonl.bz2" impresso/papers
 ```
+
+The quotes are important, since they cause the wildcard filenames to be expanded by Passim and not by the shell.
 
 You can monitor Passim's progress while running by pointing your browser to the address `localhost:4040` where the Spark dashboard can be accessed (Figure 2).
 
@@ -515,13 +516,11 @@ You can monitor Passim's progress while running by pointing your browser to the 
 
 Running Passim with eight workers (and 4 Gb of executor memory) takes about five minutes to process the 92,514 articles published in 1900 in the newspapers GDL, JDG, EXP, IMP (but your mileage may vary).
 
-If you provide as input a folder with `*.bz2` files, ensure these files are not found within subdirectories or Passim will not be able to find them automatically.
-
 It is important that the output folder where Passim will write its output is empty. Especially when running the first experiments and getting familiar with the software it can very easily happen to specify a non-empty output folder. Specifying a non-empty output folder usually leads to an error as Passim processes the folder content and does not simply overwrite it.
 
 ### Inspecting Passim's Output
 
-Once Passim has finished running, the output folder `impresso/Passim-output/` will contain a sub-folder `out.json/` with the extracted text reuse clusters. If you specified `--output=parquet` instead of `--output=json`, this sub-folder will be named `out.parquet`.
+Once Passim has finished running, the output folder `impresso/passim-output/` will contain a sub-folder `out.json/` with the extracted text reuse clusters. If you specified `--output=parquet` instead of `--output=json`, this sub-folder will be named `out.parquet`.
 
 In the JSON output each document corresponds to a text reuse passage. Since passages are aggregated into clusters, each passage contains a field `cluster` with the ID of the cluster to which it belongs.
 
@@ -529,57 +528,75 @@ To obtain the total number of cluster, we can count the number of unique cluster
 
 
 ```bash
->>> cat impresso/Passim-output/out.json/*.json | jq --slurp '[.[] | .cluster] | unique | length'
-
-2721
+$ cat impresso/passim-output/out.json/*.json | jq -c .cluster | sort -u | wc -l'
+18328
 ```
-Similarly, we can print the 100th cluster ID:
+
+Similarly, we can print the 5000th cluster ID:
+
 ```bash
->>> cat impresso/Passim-output/out.json/*.json | jq --slurp '[.[] | .cluster] | unique | .[100]'
+$ cat impresso/passim-output/out.json/*.json | jq -c .cluster | uniq | head -5000 | tail -1
+6056
+```
 
-77309411592
-```
 And with a simple `jq` query we can print all passages belonging to this text reuse cluster:
-```
->>> cat impresso/Passim-output/out.json/*.json | jq --slurp '.[] | select(.cluster==77309411592)|del(.pages)'
+
+```bash
+$ cat impresso/passim-output/out.json/*.json | jq 'select(.cluster == 6056)' 
 ```
 
 ```json
 {
-  "uid": -6695317871595380000,
-  "cluster": 77309411592,
-  "size": 2,
-  "bw": 8,
-  "ew": 96,
+  "uid": -3975303822424114000,
+  "cluster": 6056,
+  "begin": 5,
+  "end": 417,
+  "boiler": false,
+  "size": 3,
+  "pboiler": 0,
   "cc": true,
-  "date": "1900-07-30",
-  "id": "EXP-1900-07-30-a-i0017",
-  "series": "EXP",
-  "text": "nouvel accident de\nmontagne : Le fils dû guide Wyss, de\nWilderswil, âgé de 17 ans, accompagnait\nvendredi un touriste italien dans l'as-\ncension du Petersgrat En descendant sur\nle glacier de Tschingel, le jeune guide\ntomba dans une crevasse profonde de\n25 mètres. La corde était trop courte\npour l'en retirer, et des guides appelés\nà son secours ne parvinrent pas non\nplus à le dégager. Le jeune homme crie\nqu'il n'est pas blessé. Une nouvelle co-\nlonne de secours est partie samedi de\nLauterbrunnen.\nAarau, 28 juillet.\n",
-  "title": "DERNIÈRES NOUVELLES",
-  "gid": -8329671890893709000,
-  "begin": 53,
-  "end": 572
+  "date": "1900-10-22",
+  "id": "GDL-1900-10-22-a-i0020",
+  "lg": "fr",
+  "series": "GDL",
+  "text": "ÉDÉRATION SUISSE\nAnarchistes. — Suivant renseignements pris\nà bonne source par l'Agence télégraphique suis-\nse, la nouvelle pnbliée par la presse étrangère,\nsuivant laquelle certaines puissances auraient\ndemandé au Conseil fédéral s'il consentirait à\nprendre des, mesures spéciales contre les anar-\nchistes, est fausse. Le Conseil fédéral n'a plus\nreçu de communication à ce snjet depuis la con-\nférence de Rome.",
+  "title": "CONFÉDÉRATION SUISSE"
 }
 {
-  "uid": -280074845860282140,
-  "cluster": 77309411592,
-  "size": 2,
-  "bw": 2,
-  "ew": 93,
+  "uid": -2433681819068420000,
+  "cluster": 6056,
+  "begin": 10,
+  "end": 421,
+  "boiler": false,
+  "size": 3,
+  "pboiler": 0,
   "cc": true,
-  "date": "1900-07-30",
-  "id": "GDL-1900-07-30-a-i0016",
-  "series": "GDL",
-  "text": "NOUVEAUX ACCIOENTS\nInterlaken. 29 juillet.\nLe fils du guide Wyss, de Wilderswil, âgé\nde dix-sept ans, accompagnait, vendredi, un\ntouriste italien dans l'ascension du Peters-\ngrat.\nEn descendant sur le glacier de Tschingel,\nU jeune guide tomba dans une crevasse pro-\nfonde de vingt-cinq mètres. La corde était trop\ncourte pour l'en retirer, et des guides appelés\nà son secours ne parvinrent pas non plus à le\ndégager. Le jeune homme crie qu'il n'est pas\nblessé. Une nouvelle colonne de secours est\npartie samedi de Lauterbrunnen.\nChamonix, 28 juillet.\n",
-  "title": "(Chronique alpestre",
-  "gid": 2328324961100034600,
-  "begin": 20,
-  "end": 571
+  "date": "1900-10-21",
+  "id": "JDG-1900-10-21-a-i0028",
+  "lg": "fr",
+  "series": "JDG",
+  "text": " DÉPÊCHES\nSuisse\nBerne, 20. — Suivant des renseignements\npris à bonne source, la nouvelle publiée par\nla presse suisse et étrangère, suivant laquelle\ncertaines puissances auraient demandé au\nConseil fédéral s'il se prêterait à prendre des\nmesures spéciales contre les anarchistes, est\ncomplètement dénuée de fondement. Le Con-\nseil fédéral n'a plus reçu de communication\nà ce sujet depuis la conférence de Rome.",
+  "title": "DERNIÈRES DÉPÊCHES"
+}
+{
+  "uid": -5145029376058709000,
+  "cluster": 6056,
+  "begin": 21,
+  "end": 431,
+  "boiler": false,
+  "size": 3,
+  "pboiler": 0,
+  "cc": true,
+  "date": "1900-10-22",
+  "id": "EXP-1900-10-22-a-i0042",
+  "lg": "fr",
+  "series": "EXP",
+  "text": "_ELLES\nBerne, 20 octobre.\nSuivant des renseignements pris à\nbonne source, la nouvelle publiée par la\npresse suisse et étrangère, suivant la-\nquelle certaines puissances auraient de-\nmandé au Conseil fédéral s'il se prêterait\nà prendre des mesures spéciales contre\nles anarchistes, est complètement dé-\nnuée de fondement Le Conseil fédéral\nn'a plus reçu de communications à ce\nsujet depuis la conférence de Rome",
+  "title": "slSRhlEEES M0U¥ELLES"
 }
 ```
 
-As you can see from the output above, this cluster contains the same piece of news — a mountain accident which happened in Interlaken on 30 July 1900 — reported by two different newspapers on the very same day with slightly different words.
+As you can see from the output above, this cluster contains the same piece of news — a denial by the Swiss Federal Council that it was asked to target anarchists — reported by three different newspapers on the very same day with slightly different words.
 
 # Using Passim's Output
 
@@ -587,7 +604,7 @@ Since the usage of text reuse data ultimately depends on the research questions 
 
 Code that 'does something' with the data output by Passim can be written in many different programming languages. Extracted clusters can be used to deduplicate documents in a corpus, or even collate together multiple witnesses of the same text, but this will entirely depend on the research context and specific use case.
 
-To given an example of where to go next, for those who want to manipulate and further analyse text reuse data in Python, we provide a Jupyter notebook ([`explore-Passim-output.ipynb`](https://github.com/impresso/PH-Passim-tutorial/blob/master/explore-Passim-output.ipynb)) that shows how to import Passim's JSON output into a `pandas.DataFrame` and how to analyse the distribution of text reuse clusters in both uses cases presented above. For readers that are not familair with the Python library `pandas`, the *Programming Historian* lesson written by Charlie Harper on [*Visualizing Data with Bokeh and Pandas*](https://programminghistorian.org/en/lessons/visualizing-with-bokeh) is a nice (and required) introductory reading.
+To given an example of where to go next, for those who want to manipulate and further analyse text reuse data in Python, we provide a Jupyter notebook ([`explore-Passim-output.ipynb`](https://github.com/dasmiq/PH-passim-tutorial/blob/master/explore-Passim-output.ipynb)) that shows how to import Passim's JSON output into a `pandas.DataFrame` and how to analyse the distribution of text reuse clusters in both uses cases presented above. For readers that are not familair with the Python library `pandas`, the *Programming Historian* lesson written by Charlie Harper on [*Visualizing Data with Bokeh and Pandas*](https://programminghistorian.org/en/lessons/visualizing-with-bokeh) is a nice (and required) introductory reading.
 
 The code contained and explained in the notebook will produce the two plots of Figures 3 and 4, showing how the sizes of text reuse clusters are distributed in the impresso and Bible data respectively.
 
