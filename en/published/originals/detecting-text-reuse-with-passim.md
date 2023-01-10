@@ -44,7 +44,7 @@ The following list includes just some of the libraries available that perform au
 - [MatchMaker](https://github.com/JSTOR-Labs/matchmaker) (Python) developed by the JSTOR Labs
 - [Tesserae](https://github.com/tesserae/tesserae) (PHP, Perl)
 - [TextPAIR (Pairwise Alignment for Intertextual Relations)](https://github.com/ARTFL-Project/text-pair)
-- [Passim](https://github.com/dasmiq/passim) (Scala) developed by [David Smith](http://www.ccs.neu.edu/home/dasmith/) (Northeastern University)
+- [Passim](https://github.com/dasmiq/passim) (Python) developed by [David Smith](http://www.ccs.neu.edu/home/dasmith/) (Northeastern University)
 
 For this tutorial we chose the Passim library for three main reasons. Firstly, it can be adapted to a variety of use cases as it works well on a small text collection as well as on a large-scale corpus. Secondly, while the documentation for Passim is extensive, because of its relatively advanced user audience, a more user-centered step-by-step tutorial about detecting text reuse with Passim would be beneficial to the user community. Lastly, the following examples illustrate the variety of scenarios in which text reuse is a useful methodology:
 
